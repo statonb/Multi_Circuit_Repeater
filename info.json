@@ -1,10 +1,10 @@
 {
   "name": "Multi_Circuit_Repeater",
-  "version": "1.0.21",
+  "version": "1.0.23",
   "title": "Multi Circuit Repeater",
-  "author": "Mal Hubert",
+  "author": "Brian Staton",
   "Licence": "GPL",
-  "description": "Update 1.0.21: Reworked control.lua, Attempt to fix Multiplayer desync",
+  "description": "Update 1.0.23: Reworked control.lua, Fix unpowering a repeater and changing circuits",
   "dependencies": ["base >= 2.0.0"],
   "factorio_version": "2.0"
 }

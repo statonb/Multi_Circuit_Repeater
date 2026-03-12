@@ -298,9 +298,23 @@ local function MakeMeshConnections(channel)
   end
 end
 
-local function ProcessFullLinkMesh(channel)
+local function RebuildAllMeshConnections()
   RemoveAllMeshConnections()
-  MakeMeshConnections(channel)
+  local rebuilt = {}
+  for _, surface in pairs(game.surfaces) do
+    for _, radar in pairs(surface.find_entities_filtered{ name = "wireless-circuit-tower" }) do
+      if radar.valid and radar.backer_name ~= default_channel_name then
+        if not rebuilt[radar.backer_name] then
+          MakeMeshConnections(radar.backer_name)
+          rebuilt[radar.backer_name] = true
+        end
+      end
+    end
+  end
+end
+
+local function ProcessFullLinkMesh(channel)
+  RebuildAllMeshConnections()
 end
 
 ------------------------------------------------------------
@@ -308,16 +322,7 @@ end
 ------------------------------------------------------------
 
 local function CheckPowerReturnedRestoreConnections()
-  for _, surface in pairs(game.surfaces) do
-    for _, radar in pairs(surface.find_entities_filtered{ name = "wireless-circuit-tower" }) do
-      if radar.valid and radar.get_control_behavior() and radar.energy > 0 then
-        if radar.backer_name ~= default_channel_name then
-          debug_print("Restoring Mesh: " .. radar.backer_name)
-          MakeMeshConnections(radar.backer_name)
-        end
-      end
-    end
-  end
+  RebuildAllMeshConnections()
 end
 
 local function UpdateTowerPowerStates(surface)
@@ -348,8 +353,12 @@ local function UpdateTowerPowerStates(surface)
         else
           local id = storage.wct_overlays[radar.unit_number]
           if id then
-            local obj = rendering.get_object_by_id(id)
-            if obj and obj.valid then obj.destroy() end
+            if type(id) == "number" then
+              local obj = rendering.get_object_by_id(id)
+              if obj and obj.valid then obj.destroy() end
+            elseif type(id) == "userdata" then
+              if id.valid then id.destroy() end
+            end
             storage.wct_overlays[radar.unit_number] = nil
           end
         end
@@ -374,7 +383,7 @@ local function UpdateTowerPowerStates(surface)
         else
           debug_print("Reconnecting: " .. radar.unit_number)
           if radar.backer_name ~= default_channel_name then
-            MakeMeshConnections(radar.backer_name)
+            RebuildAllMeshConnections()
 
             local label = ""
             if #radar.backer_name > 0 then
