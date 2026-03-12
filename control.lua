@@ -348,12 +348,16 @@ local function UpdateTowerPowerStates(surface)
         else
           local id = storage.wct_overlays[radar.unit_number]
           if id then
-            local obj = rendering.get_object_by_id(id)
-            if obj and obj.valid then obj.destroy() end
-            storage.wct_overlays[radar.unit_number] = nil
+            if type(id) == "number" then
+              local obj = rendering.get_object_by_id(id)
+              if obj and obj.valid then obj.destroy() end
+          elseif type(id) == "userdata" then
+            if id.valid then id.destroy() end
           end
+          storage.wct_overlays[radar.unit_number] = nil
         end
 
+      end
         mini_radar_power_states[radar.unit_number] = current_state
 
         if not current_state then
